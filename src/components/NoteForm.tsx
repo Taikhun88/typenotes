@@ -1,54 +1,58 @@
+// src/components/NoteForm.tsx
 'use client';
+
 import { useState } from 'react';
-import { Note } from '@/types/note';
+import { useAppDispatch } from '@/store/hooks';
+import { addNote } from '@/store/notesSlice';
+import { useRouter } from 'next/navigation';
+import { v4 as uuidv4 } from 'uuid';
 
-type NoteFormProps = {
-  onAddNote: (note: Note) => void;
-};
+export default function NoteForm() {
+  const dispatch = useAppDispatch();
+  const router = useRouter();
 
-export default function NoteForm({ onAddNote }: NoteFormProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !content.trim()) return;
 
-    const newNote: Note = {
-      id: Date.now().toString(),
+    const newNote = {
+      id: uuidv4(),
       title,
       content,
       createdAt: new Date().toISOString(),
     };
 
-    onAddNote(newNote); // Appelle la fonction parent
-    setTitle('');
-    setContent('');
+    dispatch(addNote(newNote));
+    router.push('/notes'); // redirection
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mb-4">
+    <form onSubmit={handleSubmit}>
       <div className="mb-3">
         <label htmlFor="title" className="form-label">Titre</label>
         <input
-          type="text"
           id="title"
           className="form-control"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={e => setTitle(e.target.value)}
+          required
         />
       </div>
+
       <div className="mb-3">
         <label htmlFor="content" className="form-label">Contenu</label>
         <textarea
           id="content"
           className="form-control"
-          rows={4}
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={e => setContent(e.target.value)}
+          required
         />
       </div>
-      <button type="submit" className="btn btn-success">Ajouter la note</button>
+
+      <button type="submit" className="btn btn-primary">Créer</button>
     </form>
   );
 }
